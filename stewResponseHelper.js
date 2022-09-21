@@ -5,8 +5,7 @@
         indentation = ":",
         templateName = "",
         defaultPrompt = "",
-        requestResolved = false,
-        srhVersion = "1.0.0";
+        srhVersion = "2.0.0";
 
     $(document).ready(function () {
         mw.loader.using(['mediawiki.util'], function () {
@@ -33,11 +32,11 @@
 
     function pageMods() {
         if (/Steward_requests\/Global/.test(mw.config.get('wgPageName'))) {
-            // Add permalink to request to all "CA" links
             try {
-                var caSpans = $("li span[title='CentralAuth']");
+                // Add permalink to request to all "CA" links
+                var caSpans = $("li a[title*='CentralAuth']");
                 caSpans.each(function() {
-                    var caLink = $(this)[0].firstChild;
+                    var caLink = $(this)[0];
                     var currentRev = mw.config.get('wgCurRevisionId');
                     var reportHeader = false;
 
@@ -50,8 +49,30 @@
 
                     if (reportHeader) {
                         var reportName = $(reportHeader)[0].firstChild.id;
-                        var lockReason = '[[Special:Permalink/' + currentRev + '#' + reportName + ']]';
+                        var lockReason = '[[Special:Permalink/' + currentRev + '#' + reportName + '|request]]';
                         caLink.href = caLink.href + '?wpReason=' + lockReason;
+                    } else {
+                        console.debug('Could not find report header for ' + caLink);
+                    }
+                });
+
+                // Add permalink to request to all "gblock" links
+                var gBlockLinks = $("li a[title*='Special:GlobalBlock/']");
+                gBlockLinks.each(function() {
+                    var currentRev = mw.config.get('wgCurRevisionId');
+                    var reportHeader = false;
+
+                    // Ewwww
+                    if ($(this).closest('ul').parent()[0].localName == "td") {
+                        reportHeader = $(this).closest('table').prevAll('h3')[0];
+                    } else {
+                        reportHeader = $(this).closest('ul').prevAll('h3')[0];
+                    }
+
+                    if (reportHeader) {
+                        var reportName = $(reportHeader)[0].firstChild.id;
+                        var lockReason = '[[Special:Permalink/' + currentRev + '#' + reportName + '|request]]';
+                        this.href = this.href + '?wpReason-other=' + lockReason;
                     }
                 });
             } catch (error) {
@@ -62,6 +83,15 @@
             try {
                 if (getURLParams('wpReason')) {
                     $('input[name=wpReason]').val(getURLParams('wpReason'));
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        } else if (/Special:GlobalBlock/.test(mw.config.get('wgPageName'))) {
+            // Auto-fill wpReason-other
+            try {
+                if (getURLParams('wpReason-other')) {
+                    $('input[name=wpReason-other]').val(getURLParams('wpReason-other'));
                 }
             } catch (error) {
                 console.error(error);
@@ -89,14 +119,21 @@
             responses = {
                 "Done": {
                     code: "done",
-                    summary: "Done",
-                    requestResolved: true
+                    summary: "Done"
                 },
-                "Not Done": {
+                "Not done": {
                     code: "notdone",
-                    summary: "Not Done",
-                    prompt: "Reason:",
-                    requestResolved: false
+                    summary: "Not done",
+                    prompt: "Reason:"
+                },
+                "On hold": {
+                    code: "On hold",
+                    summary: "On hold",
+                    prompt: "Reason:"
+                },
+                "Already done": {
+                    code: "alreadydone",
+                    summary: "Already done"
                 }
             };
         }
@@ -138,11 +175,7 @@
         }
 
         if (hasStatus) {
-            if (response.requestResolved) {
-                $textarea.val($textarea.val().replace(/{{status\|?}}/ig, '{{Status|Done}}'));
-            } else {
-                $textarea.val($textarea.val().replace(/{{status\|?}}/ig, '{{Status|Not done}}'));
-            }
+            $textarea.val($textarea.val().replace(/{{status\|?}}/ig, '{{Status|' + response.summary + '}}'));
         }
 
         if (response.summary.indexOf('$1') !== -1) {
