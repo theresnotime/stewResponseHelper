@@ -1,0 +1,22 @@
+{
+  "name": "stewresponsehelper",
+  "version": "2.0.0",
+  "description": "",
+  "main": "stewResponseHelper.js",
+  "scripts": {
+    "test": "prettier -c stewResponseHelper.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theresnotime/stewResponseHelper.git"
+  },
+  "author": "",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/theresnotime/stewResponseHelper/issues"
+  },
+  "homepage": "https://github.com/theresnotime/stewResponseHelper#readme",
+  "devDependencies": {
+    "prettier": "^2.7.1"
+  }
+}
