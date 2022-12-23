@@ -5,7 +5,7 @@
     indentation = ":",
     templateName = "",
     defaultPrompt = "",
-    srhVersion = "2.0.0";
+    srhVersion = "2.1.0";
 
   $(document).ready(function () {
     mw.loader.using(["mediawiki.util"], function () {
@@ -76,6 +76,34 @@
           }
         });
 
+        // Add permalink to request to all "MultiLock" links
+        var mlSpans = $("b[data-linktype='MultiLock'] a");
+        mlSpans.each(function () {
+          var mlLink = $(this)[0];
+          var currentRev = mw.config.get("wgCurRevisionId");
+          var reportHeader = false;
+
+          // Ewwww
+          if ($(this).closest("b").parent()[0].localName == "td") {
+            reportHeader = $(this).closest("table").prevAll("h3")[0];
+          } else {
+            reportHeader = $(this).closest("ul").prevAll("h3")[0];
+          }
+
+          if (reportHeader) {
+            var reportName = $(reportHeader)[0].firstChild.id;
+            var lockReason =
+              "[[Special:Permalink/" +
+              currentRev +
+              "#" +
+              reportName +
+              "|request]]";
+            mlLink.href = mlLink.href + "&wpReason=" + lockReason;
+          } else {
+            console.debug("Could not find report header for " + mlLink);
+          }
+        });
+
         // Add permalink to request to all "gblock" links
         var gBlockLinks = $("li a[title*='Special:GlobalBlock/']");
         gBlockLinks.each(function () {
@@ -117,6 +145,19 @@
       try {
         if (getURLParams("wpReason-other")) {
           $("input[name=wpReason-other]").val(getURLParams("wpReason-other"));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    } else if (/Special:MultiLock/.test(mw.config.get("wgPageName"))) {
+      // Auto-fill wpReason from localStorage then clear
+      try {
+        if (getURLParams("wpReason")) {
+          // I have `?wpReason=foo` in my URL still, so haven't POSTed yet
+          localStorage.setItem("wpReason", getURLParams("wpReason"));
+        } else {
+          $("input[name=wpReason]").val(localStorage.getItem("wpReason"));
+          localStorage.removeItem("wpReason");
         }
       } catch (error) {
         console.error(error);
