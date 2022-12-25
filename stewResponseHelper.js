@@ -84,10 +84,10 @@
           var reportHeader = false;
 
           // Ewwww
-          if ($(this).closest("b").parent()[0].localName == "td") {
-            reportHeader = $(this).closest("table").prevAll("h3")[0];
-          } else {
+          if ($(this).closest("b").parent()[0].localName == "li") {
             reportHeader = $(this).closest("ul").prevAll("h3")[0];
+          } else {
+            reportHeader = $(this).closest("p").prevAll("h3")[0];
           }
 
           if (reportHeader) {
@@ -154,10 +154,10 @@
       try {
         if (getURLParams("wpReason")) {
           // I have `?wpReason=foo` in my URL still, so haven't POSTed yet
-          localStorage.setItem("wpReason", getURLParams("wpReason"));
+          localStorage.setItem("stewResponseHelper-wpReason", getURLParams("wpReason"));
         } else {
-          $("input[name=wpReason]").val(localStorage.getItem("wpReason"));
-          localStorage.removeItem("wpReason");
+          $("input[name=wpReason]").val(localStorage.getItem("stewResponseHelper-wpReason"));
+          localStorage.removeItem("stewResponseHelper-wpReason");
         }
       } catch (error) {
         console.error(error);
