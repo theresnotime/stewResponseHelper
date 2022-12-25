@@ -5,7 +5,7 @@
     indentation = ":",
     templateName = "",
     defaultPrompt = "",
-    srhVersion = "2.1.0";
+    srhVersion = "2.2.0";
 
   $(document).ready(function () {
     mw.loader.using(["mediawiki.util"], function () {
