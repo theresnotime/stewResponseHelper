@@ -1,15 +1,16 @@
 // <pre><nowiki>
 (function () {
   var responses = {},
+    debug = true,
     inline = false,
     indentation = ":",
     templateName = "",
     defaultPrompt = "",
-    srhVersion = "2.2.0";
+    srhVersion = "2.2.2";
 
   $(document).ready(function () {
     mw.loader.using(["mediawiki.util"], function () {
-      console.log("Loaded stewResponseHelper v" + srhVersion);
+      console.log("[srh] Loaded stewResponseHelper v" + srhVersion);
 
       // show shortcuts if not editing
       if (!mw.config.get("wgEditMessage")) {
@@ -48,6 +49,33 @@
   function pageMods() {
     if (/Steward_requests\/Global/.test(mw.config.get("wgPageName"))) {
       try {
+        $('[data-status="done"]')
+          .closest("div")
+          .prev()
+          .each(function () {
+            $(this)
+              .nextUntil(".ext-discussiontools-init-section, h3")
+              .wrapAll("<div class='srh-status-done'></div>");
+          });
+
+        $('[data-status="default"]')
+          .closest("div")
+          .prev()
+          .each(function () {
+            $(this)
+              .nextUntil(".ext-discussiontools-init-section, h3")
+              .wrapAll("<div class='srh-status-open'></div>");
+          });
+
+        $('[data-status="onhold"]')
+          .closest("div")
+          .prev()
+          .each(function () {
+            $(this)
+              .nextUntil(".ext-discussiontools-init-section, h3")
+              .wrapAll("<div class='srh-status-hold'></div>");
+          });
+
         // Add permalink to request to all "CA" links
         var caSpans = $("li a[title*='CentralAuth']");
         caSpans.each(function () {
@@ -57,12 +85,15 @@
 
           // Ewwww
           if ($(this).closest("ul").parent()[0].localName == "td") {
-            reportHeader = $(this).closest("table").prevAll("h3")[0];
+            reportHeader = $(this)
+              .closest("table")
+              .parentsUntil("h3")
+              .prev("h3");
           } else {
-            reportHeader = $(this).closest("ul").prevAll("h3")[0];
+            reportHeader = $(this).closest("ul").parentsUntil("h3").prev("h3");
           }
 
-          if (reportHeader) {
+          if (reportHeader.length > 0) {
             var reportName = $(reportHeader)[0].firstChild.id;
             var lockReason =
               "[[Special:Permalink/" +
@@ -72,7 +103,13 @@
               "|request]]";
             caLink.href = caLink.href + "?wpReason=" + lockReason;
           } else {
-            console.debug("Could not find report header for " + caLink);
+            console.debug(
+              "[srh] Could not find report header for (CA) " + caLink
+            );
+            if (debug) {
+              $(caLink).css("color", "red");
+              $(caLink).css("font-weight", "bold");
+            }
           }
         });
 
@@ -85,12 +122,12 @@
 
           // Ewwww
           if ($(this).closest("b").parent()[0].localName == "li") {
-            reportHeader = $(this).closest("ul").prevAll("h3")[0];
+            reportHeader = $(this).closest("ul").parentsUntil("h3").prev("h3");
           } else {
-            reportHeader = $(this).closest("p").prevAll("h3")[0];
+            reportHeader = $(this).closest("p").parentsUntil("h3").prev("h3");
           }
 
-          if (reportHeader) {
+          if (reportHeader.length > 0) {
             var reportName = $(reportHeader)[0].firstChild.id;
             var lockReason =
               "[[Special:Permalink/" +
@@ -100,7 +137,13 @@
               "|request]]";
             mlLink.href = mlLink.href + "&wpReason=" + lockReason;
           } else {
-            console.debug("Could not find report header for " + mlLink);
+            console.debug(
+              "[srh] Could not find report header for (ML) " + mlLink
+            );
+            if (debug) {
+              $(mlLink).css("color", "red");
+              $(mlLink).css("font-weight", "bold");
+            }
           }
         });
 
@@ -112,12 +155,15 @@
 
           // Ewwww
           if ($(this).closest("ul").parent()[0].localName == "td") {
-            reportHeader = $(this).closest("table").prevAll("h3")[0];
+            reportHeader = $(this)
+              .closest("table")
+              .parentsUntil("h3")
+              .prev("h3");
           } else {
-            reportHeader = $(this).closest("ul").prevAll("h3")[0];
+            reportHeader = $(this).closest("ul").parentsUntil("h3").prev("h3");
           }
 
-          if (reportHeader) {
+          if (reportHeader.length > 0) {
             var reportName = $(reportHeader)[0].firstChild.id;
             var lockReason =
               "[[Special:Permalink/" +
@@ -126,6 +172,15 @@
               reportName +
               "|request]]";
             this.href = this.href + "?wpReason-other=" + lockReason;
+          } else {
+            console.debug(
+              "[srh] Could not find report header for (GB) " + this
+            );
+            if (debug) {
+              $(this);
+              $(this).css("color", "red");
+              $(this).css("font-weight", "bold");
+            }
           }
         });
       } catch (error) {
@@ -154,9 +209,14 @@
       try {
         if (getURLParams("wpReason")) {
           // I have `?wpReason=foo` in my URL still, so haven't POSTed yet
-          localStorage.setItem("stewResponseHelper-wpReason", getURLParams("wpReason"));
+          localStorage.setItem(
+            "stewResponseHelper-wpReason",
+            getURLParams("wpReason")
+          );
         } else {
-          $("input[name=wpReason]").val(localStorage.getItem("stewResponseHelper-wpReason"));
+          $("input[name=wpReason]").val(
+            localStorage.getItem("stewResponseHelper-wpReason")
+          );
           localStorage.removeItem("stewResponseHelper-wpReason");
         }
       } catch (error) {
