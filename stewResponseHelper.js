@@ -6,7 +6,7 @@
     indentation = ":",
     templateName = "",
     defaultPrompt = "",
-    srhVersion = "2.2.2";
+    srhVersion = "2.2.3";
 
   $(document).ready(function () {
     mw.loader.using(["mediawiki.util"], function () {
@@ -75,6 +75,22 @@
               .nextUntil(".ext-discussiontools-init-section, h3")
               .wrapAll("<div class='srh-status-hold'></div>");
           });
+
+        var srhToggleHide = mw.util.addPortletLink(
+          "p-cactions",
+          "#",
+          "[srh] Toggle hide complete"
+        );
+        $(srhToggleHide).on("click", function (e) {
+          $(".srh-status-done").each(function () {
+            if ($(this).css("display") == "none") {
+              $(this).show();
+            } else {
+              $(this).hide();
+            }
+          });
+          e.preventDefault();
+        });
 
         // Add permalink to request to all "CA" links
         var caSpans = $("li a[title*='CentralAuth']");
