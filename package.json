@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/theresnotime/stewResponseHelper#readme",
   "devDependencies": {
-    "prettier": "^2.8.4"
+    "prettier": "^2.8.7"
   }
 }
